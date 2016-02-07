@@ -34,7 +34,7 @@ on early-init
     setprop sys.io.scheduler noop
 
 on init
-    export LD_SHIM_LIBS "/system/vendor/lib/libqc-opt.so|libshim_qcopt.so:/system/bin/rmt_storage|libshim_rmt_storage.so:/system/vendor/lib/libOpenCL.so|libboringssl-compat.so"
+    export LD_SHIM_LIBS "/system/vendor/lib/libqc-opt.so|libshim_qcopt.so:/system/bin/rmt_storage|libshim_rmt_storage.so:/system/vendor/lib/libOpenCL.so|libboringssl-compat.so:/system/lib/libril.so|libril_shim.so"
 
     # Set permissions for persist partition
     mkdir /persist 0771 system system
@@ -354,8 +354,7 @@ on property:bluetooth.hciattach=false
 service qmuxd /system/bin/qmuxd
     class main
     user radio
-    group radio audio bluetooth gps qcom_diag
-    disabled
+    group radio audio bluetooth gps qcom_diag log
 
 service sensors /system/bin/sensors.qcom
     class late_start

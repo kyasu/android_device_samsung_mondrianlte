@@ -99,6 +99,10 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.telephony.gsm.xml:system/etc/permissions/android.hardware.telephony.gsm.xml \
     frameworks/native/data/etc/tablet_core_hardware.xml:system/etc/permissions/tablet_core_hardware.xml
 
+# Radio
+PRODUCT_PACKAGES += \
+    libril_shim
+
 # Ramdisk
 PRODUCT_PACKAGES += \
     fstab.qcom \

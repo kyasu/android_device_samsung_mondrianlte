@@ -86,6 +86,9 @@ TARGET_USERIMAGES_USE_F2FS := true
 TARGET_POWERHAL_VARIANT := qcom
 TARGET_POWERHAL_SET_INTERACTIVE_EXT := device/samsung/mondrianlte/power/power_ext.c
 
+# RIL
+BOARD_RIL_CLASS := ../../../device/samsung/mondrianlte/ril
+
 # Recovery
 COMMON_GLOBAL_CFLAGS += -DNO_SECURE_DISCARD
 BOARD_HAS_LARGE_FILESYSTEM := true
