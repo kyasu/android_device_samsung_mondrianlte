@@ -15,15 +15,15 @@
 # inherit from common msm8974
 -include device/samsung/msm8974-common/BoardConfigCommon.mk
 
-TARGET_SPECIFIC_HEADER_PATH := device/samsung/mondrianwifi/include
+TARGET_SPECIFIC_HEADER_PATH := device/samsung/mondrianlte/include
 
-TARGET_OTA_ASSERT_DEVICE := mondrianwifi,mondrianwifiue,mondrianwifixx
+TARGET_OTA_ASSERT_DEVICE := mondrianlte,mondrianltexx
 
 # Bootloader
 TARGET_BOOTLOADER_BOARD_NAME := MSM8974
 
 # Kernel
-BOARD_CUSTOM_BOOTIMG_MK := device/samsung/mondrianwifi/mkbootimg.mk
+BOARD_CUSTOM_BOOTIMG_MK := device/samsung/mondrianlte/mkbootimg.mk
 BOARD_KERNEL_BASE := 0x00000000
 BOARD_KERNEL_CMDLINE := console=null androidboot.hardware=qcom user_debug=31 msm_rtb.filter=0x37 ehci-hcd.park=3
 BOARD_KERNEL_PAGESIZE := 2048
@@ -45,7 +45,7 @@ USE_CUSTOM_AUDIO_POLICY := 1
 
 # Bluetooth
 BLUETOOTH_HCI_USE_MCT := true
-BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/samsung/mondrianwifi/bluetooth
+BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/samsung/mondrianlte/bluetooth
 BOARD_HAVE_BLUETOOTH_QCOM := true
 QCOM_BT_USE_SMD_TTY := true
 
@@ -58,10 +58,10 @@ BOARD_CHARGER_SHOW_PERCENTAGE := true
 
 # GPS
 TARGET_NO_RPC := true
-TARGET_GPS_HAL_PATH := device/samsung/mondrianwifi/gps
+TARGET_GPS_HAL_PATH := device/samsung/mondrianlte/gps
 
 # Hardware
-BOARD_HARDWARE_CLASS += device/samsung/mondrianwifi/cmhw
+BOARD_HARDWARE_CLASS += device/samsung/mondrianlte/cmhw
 
 # Graphics
 TARGET_HAVE_NEW_GRALLOC := true
@@ -84,7 +84,7 @@ TARGET_USERIMAGES_USE_F2FS := true
 
 # PowerHAL
 TARGET_POWERHAL_VARIANT := qcom
-TARGET_POWERHAL_SET_INTERACTIVE_EXT := device/samsung/mondrianwifi/power/power_ext.c
+TARGET_POWERHAL_SET_INTERACTIVE_EXT := device/samsung/mondrianlte/power/power_ext.c
 
 # Recovery
 COMMON_GLOBAL_CFLAGS += -DNO_SECURE_DISCARD
@@ -94,11 +94,11 @@ BOARD_HAS_NO_SELECT_BUTTON := true
 BOARD_RECOVERY_SWIPE := true
 BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_23x41.h\"
 BOARD_USES_MMCUTILS := true
-TARGET_RECOVERY_FSTAB := device/samsung/mondrianwifi/rootdir/etc/fstab.qcom
+TARGET_RECOVERY_FSTAB := device/samsung/mondrianlte/rootdir/etc/fstab.qcom
 
 # SELinux
 include device/qcom/sepolicy/sepolicy.mk
-BOARD_SEPOLICY_DIRS += device/samsung/mondrianwifi/sepolicy
+BOARD_SEPOLICY_DIRS += device/samsung/mondrianlte/sepolicy
 
 # Wifi
 BOARD_HAS_QCOM_WLAN := true

@@ -14,11 +14,11 @@
 
 #
 # This file is the build configuration for a full Android
-# build for mondrianwifi hardware. This cleanly combines a set of
+# build for mondrianlte hardware. This cleanly combines a set of
 # device-specific aspects (drivers) with a device-agnostic
 # product configuration (apps). Except for a few implementation
 # details, it only fundamentally contains two inherit-product
-# lines, full and mondrianwifi, hence its name.
+# lines, full and mondrianlte, hence its name.
 #
 
 
@@ -26,11 +26,11 @@
 $(call inherit-product, $(SRC_TARGET_DIR)/product/full_base.mk)
 
 # Set those variables here to overwrite the inherited values.
-PRODUCT_NAME := mondrianwifi
-PRODUCT_DEVICE := mondrianwifi
+PRODUCT_NAME := mondrianlte
+PRODUCT_DEVICE := mondrianlte
 PRODUCT_BRAND := samsung
 PRODUCT_MANUFACTURER := samsung
-PRODUCT_MODEL := SM-T320
+PRODUCT_MODEL := SM-T325
 
-$(call inherit-product, device/samsung/mondrianwifi/device.mk)
-$(call inherit-product-if-exists, vendor/samsung/mondrianwifi/mondrianwifi-vendor.mk)
+$(call inherit-product, device/samsung/mondrianlte/device.mk)
+$(call inherit-product-if-exists, vendor/samsung/mondrianlte/mondrianlte-vendor.mk)

@@ -54,17 +54,11 @@ void init_msm_properties(unsigned long msm_id, unsigned long msm_ver, char *boar
 
     property_get("ro.bootloader", bootloader);
 
-    if (strstr(bootloader, "T320UE")) {
-        property_set("ro.build.fingerprint", "samsung/mondrianwifiue/mondrianwifiue:4.4.2/KOT49H/T320UEU1ANAI:user/release-keys");
-        property_set("ro.build.description", "mondrianwifiue-user 4.4.2 KOT49H T320UEU1ANAI release-keys");
-        property_set("ro.product.model", "SM-T320");
-        property_set("ro.product.device", "mondrianwifiue");
-    } else {
-        property_set("ro.build.fingerprint", "samsung/mondrianwifixx/mondrianwifi:4.4.2/KOT49H/T320XXU1ANAI:user/release-keys");
-        property_set("ro.build.description", "mondrianwifixx-user 4.4.2 KOT49H T320XXU1ANAI release-keys");
-        property_set("ro.product.model", "SM-T320");
-        property_set("ro.product.device", "mondrianwifi");
-    }
+    property_set("ro.build.fingerprint", "samsung/mondrianltexx/mondrianlte:4.4.2/KOT49H/T325XXU1BNK2:user/release-keys");
+    property_set("ro.build.description", "mondrianltexx-user 4.4.2 KOT49H T325XXU1BNK2 release-keys");
+    property_set("ro.product.model", "SM-T325");
+    property_set("ro.product.device", "mondrianlte");
+
     property_get("ro.product.device", device);
     strlcpy(devicename, device, sizeof(devicename));
     ERROR("Found bootloader id %s setting build properties for %s device\n", bootloader, devicename);
