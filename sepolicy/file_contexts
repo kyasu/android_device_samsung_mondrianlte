@@ -4,3 +4,6 @@
 /sys/devices/virtual/sec/sec_touchkey/tsp_keys_enabled u:object_r:sysfs_input_file:s0
 
 /system/bin/thermal-engine             u:object_r:thermal-engine_exec:s0
+
+/sys/devices/virtual/sec(/.*)?                          u:object_r:sysfs_sec:s0
+/sys/class/sec(/.*)?                                    u:object_r:sysfs_sec:s0
