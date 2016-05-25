@@ -122,6 +122,10 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     libstlport
 
+# ril
+PRODUCT_PACKAGES += \
+    libshim_ril
+
 # rmt_storage
 PRODUCT_PACKAGES += \
     libshim_rmt_storage

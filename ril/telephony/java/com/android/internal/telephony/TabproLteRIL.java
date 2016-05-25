@@ -1,5 +1,8 @@
 /*
- * Copyright (c) 2014, The CyanogenMod Project. All rights reserved.
+ * Copyright (c) 2012-2013, The Linux Foundation. All rights reserved.
+ * Not a Contribution.
+ *
+ * Copyright (C) 2006 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,48 +26,32 @@ import android.media.AudioManager;
 import android.os.AsyncResult;
 import android.os.Message;
 import android.os.Parcel;
-import android.os.SystemProperties;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.Rlog;
 import android.telephony.SignalStrength;
 
-import com.android.internal.telephony.cdma.CdmaInformationRecords;
-import com.android.internal.telephony.cdma.CdmaInformationRecords.CdmaSignalInfoRec;
-import com.android.internal.telephony.cdma.SignalToneUtil;
-import com.android.internal.telephony.uicc.IccCardApplicationStatus;
-import com.android.internal.telephony.uicc.IccCardStatus;
-
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import com.android.internal.telephony.uicc.IccCardApplicationStatus;
+import com.android.internal.telephony.uicc.IccCardStatus;
+
 /**
- * RIL customization for Samsung Tab Pro 8.4 (LTE)
+ * RIL customization for tabpro LTE devices
  *
  * {@hide}
  */
-public class mondrianlteRIL extends RIL {
+public class TabproLteRIL extends RIL {
 
-    private static final int RIL_REQUEST_DIAL_EMERGENCY_LL = 10001;
-    private static final int RIL_UNSOL_AM = 11010;
-    private static final int RIL_UNSOL_WB_AMR_STATE = 11017;
-    private static final int RIL_UNSOL_RESPONSE_HANDOVER = 11021;
-    private static final int RIL_UNSOL_SRVCC_HANDOVER = 11029;
-    private static final int RIL_UNSOL_ON_SS_LL = 11055;
+    private static final int RIL_REQUEST_DIAL_EMERGENCY = 10016;
 
-    private boolean mIsGsm = true;
-    private AudioManager mAudioManager;
+    private final AudioManager mAudioManager;
 
-    public mondrianlteRIL(Context context, int networkMode, int cdmaSubscription) {
-        super(context, networkMode, cdmaSubscription, null);
-        mQANElements = 6;
+    public TabproLteRIL(Context context, int networkMode, int cdmaSubscription, Integer instanceId) {
+        super(context, networkMode, cdmaSubscription, instanceId);
         mAudioManager = (AudioManager)mContext.getSystemService(Context.AUDIO_SERVICE);
-    }
-
-    public mondrianlteRIL(Context context, int preferredNetworkType,
-            int cdmaSubscription, Integer instanceId) {
-        super(context, preferredNetworkType, cdmaSubscription, instanceId);
         mQANElements = 6;
-        mAudioManager = (AudioManager)mContext.getSystemService(Context.AUDIO_SERVICE);
     }
 
     @Override
@@ -79,9 +66,9 @@ public class mondrianlteRIL extends RIL {
 
         rr.mParcel.writeString(address);
         rr.mParcel.writeInt(clirMode);
-        rr.mParcel.writeInt(0);     // CallDetails.call_type
-        rr.mParcel.writeInt(1);     // CallDetails.call_domain
-        rr.mParcel.writeString(""); // CallDetails.getCsvFromExtras
+        rr.mParcel.writeInt(0);         // CallDetails.call_type
+        rr.mParcel.writeInt(1);         // CallDetails.call_domain
+        rr.mParcel.writeString("");     // CallDetails.getCsvFromExtras
 
         if (uusInfo == null) {
             rr.mParcel.writeInt(0); // UUS information is absent
@@ -100,7 +87,7 @@ public class mondrianlteRIL extends RIL {
     @Override
     protected Object
     responseIccCardStatus(Parcel p) {
-        IccCardApplicationStatus appStatus = null;
+        IccCardApplicationStatus appStatus;
 
         IccCardStatus cardStatus = new IccCardStatus();
         cardStatus.setCardState(p.readInt());
@@ -127,6 +114,7 @@ public class mondrianlteRIL extends RIL {
             appStatus.pin1_replaced  = p.readInt();
             appStatus.pin1           = appStatus.PinStateFromRILInt(p.readInt());
             appStatus.pin2           = appStatus.PinStateFromRILInt(p.readInt());
+            // All subsequent readInt()s added for our device
             p.readInt(); // pin1_num_retries
             p.readInt(); // puk1_num_retries
             p.readInt(); // pin2_num_retries
@@ -134,40 +122,6 @@ public class mondrianlteRIL extends RIL {
             p.readInt(); // perso_unblock_retries
 
             cardStatus.mApplications[i] = appStatus;
-        }
-
-        // For Sprint LTE only SIM
-        if (appStatus != null
-                && numApplications == 1
-                && !mIsGsm
-                && appStatus.app_type == appStatus.AppTypeFromRILInt(2)) {
-            cardStatus.mApplications = new IccCardApplicationStatus[3];
-            cardStatus.mApplications[0] = appStatus;
-            cardStatus.mGsmUmtsSubscriptionAppIndex = 0;
-            cardStatus.mCdmaSubscriptionAppIndex = 1;
-            cardStatus.mImsSubscriptionAppIndex = 2;
-
-            IccCardApplicationStatus appStatus2 = new IccCardApplicationStatus();
-            appStatus2.app_type       = appStatus2.AppTypeFromRILInt(4); // csim state
-            appStatus2.app_state      = appStatus.app_state;
-            appStatus2.perso_substate = appStatus.perso_substate;
-            appStatus2.aid            = appStatus.aid;
-            appStatus2.app_label      = appStatus.app_label;
-            appStatus2.pin1_replaced  = appStatus.pin1_replaced;
-            appStatus2.pin1           = appStatus.pin1;
-            appStatus2.pin2           = appStatus.pin2;
-            cardStatus.mApplications[cardStatus.mCdmaSubscriptionAppIndex] = appStatus2;
-
-            IccCardApplicationStatus appStatus3 = new IccCardApplicationStatus();
-            appStatus3.app_type       = appStatus3.AppTypeFromRILInt(5); // ims state
-            appStatus3.app_state      = appStatus.app_state;
-            appStatus3.perso_substate = appStatus.perso_substate;
-            appStatus3.aid            = appStatus.aid;
-            appStatus3.app_label      = appStatus.app_label;
-            appStatus3.pin1_replaced  = appStatus.pin1_replaced;
-            appStatus3.pin1           = appStatus.pin1;
-            appStatus3.pin2           = appStatus.pin2;
-            cardStatus.mApplications[cardStatus.mImsSubscriptionAppIndex] = appStatus3;
         }
         return cardStatus;
     }
@@ -192,6 +146,7 @@ public class mondrianlteRIL extends RIL {
             dc = new DriverCall();
 
             dc.state = DriverCall.stateFromCLCC(p.readInt());
+            // & 0xff to truncate to 1 byte added for us, not in RIL.java
             dc.index = p.readInt() & 0xff;
             dc.TOA = p.readInt();
             dc.isMpty = (0 != p.readInt());
@@ -199,17 +154,16 @@ public class mondrianlteRIL extends RIL {
             dc.als = p.readInt();
             voiceSettings = p.readInt();
             dc.isVoice = (0 != voiceSettings);
-            if (mIsGsm) {
-                int call_type = p.readInt();            // Samsung CallDetails
-                int call_domain = p.readInt();          // Samsung CallDetails
-                String csv = p.readString();            // Samsung CallDetails
-            }
+            boolean isVideo = (0 != p.readInt());
+            int call_type = p.readInt();            // Samsung CallDetails
+            int call_domain = p.readInt();          // Samsung CallDetails
+            String csv = p.readString();            // Samsung CallDetails
             dc.isVoicePrivacy = (0 != p.readInt());
             dc.number = p.readString();
             int np = p.readInt();
             dc.numberPresentation = DriverCall.presentationFromCLIP(np);
             dc.name = p.readString();
-            dc.namePresentation = DriverCall.presentationFromCLIP(p.readInt());
+            dc.namePresentation = p.readInt();
             int uusInfoPresent = p.readInt();
             if (uusInfoPresent == 1) {
                 dc.uusInfo = new UUSInfo();
@@ -272,6 +226,7 @@ public class mondrianlteRIL extends RIL {
         int lteCqi = p.readInt();
         int tdScdmaRscp = p.readInt();
         // constructor sets default true, makeSignalStrengthFromRilParcel does not set it
+        boolean isGsm = true;
 
         if ((lteSignalStrength & 0xff) == 255 || lteSignalStrength == 99) {
             lteSignalStrength = 99;
@@ -289,36 +244,11 @@ public class mondrianlteRIL extends RIL {
                     " evdoEcio: " + evdoEcio + " evdoSnr:" + evdoSnr +
                     " lteSignalStrength:" + lteSignalStrength + " lteRsrp:" + lteRsrp +
                     " lteRsrq:" + lteRsrq + " lteRssnr:" + lteRssnr + " lteCqi:" + lteCqi +
-                    " tdScdmaRscp:" + tdScdmaRscp + " isGsm:" + (mIsGsm ? "true" : "false"));
+                    " tdScdmaRscp:" + tdScdmaRscp + " isGsm:" + (isGsm ? "true" : "false"));
 
         return new SignalStrength(gsmSignalStrength, gsmBitErrorRate, cdmaDbm, cdmaEcio, evdoDbm,
                 evdoEcio, evdoSnr, lteSignalStrength, lteRsrp, lteRsrq, lteRssnr, lteCqi,
-                tdScdmaRscp, mIsGsm);
-    }
-
-    @Override
-    protected void notifyRegistrantsCdmaInfoRec(CdmaInformationRecords infoRec) {
-        final int response = RIL_UNSOL_CDMA_INFO_REC;
-
-        if (infoRec.record instanceof CdmaSignalInfoRec) {
-            CdmaSignalInfoRec rec = (CdmaSignalInfoRec) infoRec.record;
-            if (rec != null
-                    && rec.isPresent
-                    && rec.signalType == SignalToneUtil.IS95_CONST_IR_SIGNAL_IS54B
-                    && rec.alertPitch == SignalToneUtil.IS95_CONST_IR_ALERT_MED
-                    && rec.signal == SignalToneUtil.IS95_CONST_IR_SIG_IS54B_L) {
-                /* Drop record, otherwise IS95_CONST_IR_SIG_IS54B_L tone will
-                 * continue to play after the call is connected */
-                return;
-            }
-        }
-        super.notifyRegistrantsCdmaInfoRec(infoRec);
-    }
-
-    @Override
-    public void setPhoneType(int phoneType) {
-        super.setPhoneType(phoneType);
-        //mIsGsm = (phoneType != RILConstants.CDMA_PHONE);
+                tdScdmaRscp, isGsm);
     }
 
     @Override
@@ -329,60 +259,38 @@ public class mondrianlteRIL extends RIL {
         int response = p.readInt();
 
         switch(response) {
-            case RIL_UNSOL_AM:
+            // SAMSUNG STATES
+            case 11010: // RIL_UNSOL_AM:
                 ret = responseString(p);
+                String amString = (String) ret;
+                Rlog.d(RILJ_LOG_TAG, "Executing AM: " + amString);
+
+                try {
+                    Runtime.getRuntime().exec("am " + amString);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Rlog.e(RILJ_LOG_TAG, "am " + amString + " could not be executed.");
+                }
                 break;
-            case RIL_UNSOL_RESPONSE_HANDOVER:
+            case 11021: // RIL_UNSOL_RESPONSE_HANDOVER:
                 ret = responseVoid(p);
                 break;
-            case RIL_UNSOL_SRVCC_HANDOVER:
+            case 1036:
                 ret = responseVoid(p);
                 break;
-            case RIL_UNSOL_WB_AMR_STATE:
+            case 11017: // RIL_UNSOL_WB_AMR_STATE:
                 ret = responseInts(p);
                 setWbAmr(((int[])ret)[0]);
                 break;
-            case RIL_UNSOL_ON_SS_LL:
-                p.setDataPosition(dataPosition);
-                p.writeInt(RIL_UNSOL_ON_SS);
-                // Do not break
             default:
                 // Rewind the Parcel
                 p.setDataPosition(dataPosition);
+
                 // Forward responses that we are not overriding to the super class
                 super.processUnsolicited(p);
                 return;
         }
-    }
 
-    @Override
-    public void
-    acceptCall (Message result) {
-        RILRequest rr = RILRequest.obtain(RIL_REQUEST_ANSWER, result);
-
-        rr.mParcel.writeInt(1);
-        rr.mParcel.writeInt(0);
-
-        if (RILJ_LOGD) riljLog(rr.serialString() + "> " + requestToString(rr.mRequest));
-
-        send(rr);
-    }
-
-    private void
-    dialEmergencyCall(String address, int clirMode, Message result) {
-        RILRequest rr;
-
-        rr = RILRequest.obtain(RIL_REQUEST_DIAL_EMERGENCY_LL, result);
-        rr.mParcel.writeString(address);
-        rr.mParcel.writeInt(clirMode);
-        rr.mParcel.writeInt(0);        // CallDetails.call_type
-        rr.mParcel.writeInt(3);        // CallDetails.call_domain
-        rr.mParcel.writeString("");    // CallDetails.getCsvFromExtra
-        rr.mParcel.writeInt(0);        // Unknown
-
-        if (RILJ_LOGD) riljLog(rr.serialString() + "> " + requestToString(rr.mRequest));
-
-        send(rr);
     }
 
     @Override
@@ -443,9 +351,60 @@ public class mondrianlteRIL extends RIL {
         return rr;
     }
 
+    @Override
+    public void getHardwareConfig(Message response) {
+        Rlog.v(RILJ_LOG_TAG, "tabproRIL: getHardwareConfig");
+        failNewRequest(response);
+    }
+
+    @Override
+    public void getRadioCapability(Message response) {
+        Rlog.v(RILJ_LOG_TAG, "tabproRIL: getRadioCapability");
+        if (response != null) {
+            AsyncResult.forMessage(response, makeStaticRadioCapability(), null);
+            response.sendToTarget();
+        }
+    }
+
+    @Override
+    public void startLceService(int reportIntervalMs, boolean pullMode, Message response) {
+        Rlog.v(RILJ_LOG_TAG, "tabproRIL: startLcdService");
+        failNewRequest(response);
+    }
+
+    @Override
+    protected void
+    send(RILRequest rr) {
+        if (rr.mRequest >= 114) {
+            Rlog.v(RILJ_LOG_TAG, "tabproRIL: barf, jacked up request that we need to fix");
+            rr.onError(REQUEST_NOT_SUPPORTED, null);
+            rr.release();
+        } else {
+            super.send(rr);
+        }
+    }
+
+    private void
+    dialEmergencyCall(String address, int clirMode, Message result) {
+        RILRequest rr;
+        Rlog.v(RILJ_LOG_TAG, "Emergency dial: " + address);
+
+        rr = RILRequest.obtain(RIL_REQUEST_DIAL_EMERGENCY, result);
+        rr.mParcel.writeString(address + "/");
+        rr.mParcel.writeInt(clirMode);
+        rr.mParcel.writeInt(0);        // CallDetails.call_type
+        rr.mParcel.writeInt(3);        // CallDetails.call_domain
+        rr.mParcel.writeString("");    // CallDetails.getCsvFromExtra
+        rr.mParcel.writeInt(0);        // Unknown
+
+        if (RILJ_LOGD) riljLog(rr.serialString() + "> " + requestToString(rr.mRequest));
+
+        send(rr);
+    }
+
     private Object
     responseDataRegistrationState(Parcel p) {
-        String response[] = (String[])responseStrings(p);
+        String response[] = (String[])responseStrings(p); // all data from parcell get popped
         /* DANGER WILL ROBINSON
          * In some cases from Vodaphone we are receiving a RAT of 102
          * while in tunnels of the metro. Lets Assume that if we
@@ -467,10 +426,31 @@ public class mondrianlteRIL extends RIL {
         if (state == 1) {
             Rlog.d(RILJ_LOG_TAG, "setWbAmr(): setting audio parameter - wb_amr=on");
             mAudioManager.setParameters("wide_voice_enable=true");
-        } else if (state == 0) {
+        }else if (state == 0) {
             Rlog.d(RILJ_LOG_TAG, "setWbAmr(): setting audio parameter - wb_amr=off");
             mAudioManager.setParameters("wide_voice_enable=false");
         }
     }
 
+    private void logParcel(Parcel p) {
+        StringBuffer s = new StringBuffer();
+        byte [] bytes = p.marshall();
+
+        for (int i = 0; i < bytes.length; i++) {
+            if (i > 0) s.append(" ");
+            if (i == p.dataPosition()) s.append("*** ");
+            s.append(bytes[i]);
+        }
+        riljLog("parcel position=" + p.dataPosition() + ": " + s);
+    }
+
+    private void failNewRequest(Message response) {
+        if (response != null) {
+            Rlog.v(RILJ_LOG_TAG, "tabproRIL: failing with REQUEST_NOT_SUPPORTED");
+            CommandException ex;
+            ex = new CommandException(CommandException.Error.REQUEST_NOT_SUPPORTED);
+            AsyncResult.forMessage(response, null, ex);
+            response.sendToTarget();
+        }
+    }
 }

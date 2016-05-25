@@ -13,6 +13,19 @@ LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_SHARED_LIBRARY)
 
+# libshim_ril
+
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES := \
+     ril.c
+
+LOCAL_SHARED_LIBRARIES := libbinder
+LOCAL_MODULE := libshim_ril
+LOCAL_MODULE_TAGS := optional
+
+include $(BUILD_SHARED_LIBRARY)
+
 # libshim_rmt_storage
 
 include $(CLEAR_VARS)
@@ -24,3 +37,4 @@ LOCAL_MODULE := libshim_rmt_storage
 LOCAL_MODULE_TAGS := optional
 
 include $(BUILD_SHARED_LIBRARY)
+
