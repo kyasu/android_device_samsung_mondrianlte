@@ -92,16 +92,18 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PROPERTY_OVERRIDES += \
     av.streaming.offload.enable=false
 
+# NFC
+PRODUCT_COPY_FILES_OVERRIDES += \
+   system/etc/permissions/com.android.nfc_extras.xml \
+   system/etc/permissions/android.hardware.nfc.xml \
+   system/etc/permissions/android.hardware.nfc.hce.xml
+
 # Permissions
 PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.consumerir.xml:system/etc/permissions/android.hardware.consumerir.xml \
     frameworks/native/data/etc/android.hardware.telephony.cdma.xml:system/etc/permissions/android.hardware.telephony.cdma.xml \
     frameworks/native/data/etc/android.hardware.telephony.gsm.xml:system/etc/permissions/android.hardware.telephony.gsm.xml \
     frameworks/native/data/etc/tablet_core_hardware.xml:system/etc/permissions/tablet_core_hardware.xml
-
-# Radio
-PRODUCT_PACKAGES += \
-    libril_shim
 
 # Ramdisk
 PRODUCT_PACKAGES += \
@@ -113,6 +115,10 @@ PRODUCT_PACKAGES += \
     init.qcom.usb.rc \
     init.target.rc \
     ueventd.qcom.rc
+
+# Rootdir
+PRODUCT_PACKAGES += \
+    init.qcom.bt.sh
 
 # Ssl
 PRODUCT_PACKAGES += \
